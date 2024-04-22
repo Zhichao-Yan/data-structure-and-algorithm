@@ -15,10 +15,12 @@ typedef struct node{
 }Tree;
 
 
+
 bool insert(Tree **T, ElemType e);
+void delete(Tree **T,ElemType e);
+Tree *search(Tree *T,ElemType e);
 void traverse(Tree *T);
 void show(Tree *T);
-// void print_tree(Tree *root, int level);
-// void print_tree(Tree *root);
+void print_tree(Tree *root);
 // void print_tree_bfs(Tree *root);
 #endif

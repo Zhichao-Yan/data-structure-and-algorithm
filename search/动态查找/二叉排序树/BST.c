@@ -73,7 +73,7 @@ Tree* build_tree(ElemType *data,size_t size)
 }
 
 /* 替代策略，不会直接删除结点T */
-void replace(Tree *T)
+static void replace(Tree *T)
 {
     if(T->left)
     {
@@ -90,8 +90,7 @@ void replace(Tree *T)
             p->right = s->left;
         free(s);
         return;
-    }
-    if(T->right)
+    }else if(T->right)
     {
         Tree *p = T,*s = T->right;
         while(s->left)
@@ -111,7 +110,7 @@ void replace(Tree *T)
 }
 
 /* 删除结点 */
-void delete_node(Tree *T,ElemType e,Tree *f)
+static void delete_node(Tree *T,ElemType e,Tree *f)
 {
     // T不存在，直接返回
     if(!T)
@@ -122,18 +121,17 @@ void delete_node(Tree *T,ElemType e,Tree *f)
             replace(T);     // 采用替代策略，删除替代的前驱或者后继
         else
         {
+            if(f->left == T)
+                f->left = NULL;
+            else
+                f->right = NULL;
             // 没有左子树也没有右子树，找不到前驱和后继，直接删除T
             free(T);
-            // 不用关心T是f的左子树还是右子树
-            f->left = NULL;
-            f->right = NULL;
         }
-    }
-    if(T->e > e)
+    }else if(T->e > e)
     {
         delete_node(T->left,e,T);
-    }
-    if(T->e < e)
+    }else if(T->e < e)
     {
         delete_node(T->right,e,T);
     }

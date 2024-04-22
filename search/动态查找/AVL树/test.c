@@ -12,5 +12,18 @@ int main()
             printf("%d插入失败\n",A[i]);
         }
     }
+    // show(T);
+    // Tree *node = search(T,10);
+    // if(node)
+    //     printf("成功查找到%d的结点\n",node->data);
+    // else
+    //     printf("没有找到结点\n");
+    // node = search(T,100);
+    // if(node)
+    //     printf("成功查找到%d的结点\n",node->data);
+    // else
+    //     printf("没有找到结点\n");
+    // delete(&T,100);
+    // delete(&T,3);
     show(T);
 }
