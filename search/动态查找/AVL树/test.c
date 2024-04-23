@@ -24,6 +24,8 @@ int main()
     // else
     //     printf("没有找到结点\n");
     // delete(&T,100);
-    // delete(&T,3);
+    // delete(&T,4);
+    delete1(&T,100);
+    delete1(&T,4);
     show(T);
 }

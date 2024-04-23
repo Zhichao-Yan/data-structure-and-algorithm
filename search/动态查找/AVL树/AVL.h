@@ -18,6 +18,7 @@ typedef struct node{
 
 bool insert(Tree **T, ElemType e);
 void delete(Tree **T,ElemType e);
+void delete1(Tree **T,ElemType e);
 Tree *search(Tree *T,ElemType e);
 void traverse(Tree *T);
 void show(Tree *T);

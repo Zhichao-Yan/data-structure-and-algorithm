@@ -106,13 +106,158 @@ Tree *search(Tree *T,ElemType e)
     return NULL;
 }
 
+
+/* 从树的根结点到node进行平衡性调整，不平衡需要再平衡，树各结点的深度信息也需要改变 */
+static void adjust(Tree **T,Tree *node)
+{
+    Tree *tree = *T;
+    if(tree->data > node->data)
+    {
+        adjust(&tree->left,node);
+    }
+    if(tree->data < node->data)
+    {
+        adjust(&tree->right,node);
+    }
+    int len1 = get_depth(tree->left);
+    int len2 = get_depth(tree->right);
+    if(len1 - len2 == 2)
+    {
+        // 进行向右的平衡旋转
+        right_balance(T);
+    }else if(len1 - len2 == -2)
+    {
+        // 进行向左的平衡旋转
+        left_balance(T);
+    }else{
+        // 不需要再平衡，但是根结点（*T）的深度需要更新，也可能没变
+        (*T)->dp = ((len1 > len2)? len1 : len2) + 1;
+    }
+    return;     
+}
+
+/* 替代策略，不会直接删除结点T,
+*  而是找到它的前驱结点s，然后复制给结点T，相当于间接删除T。
+*  然后删除结点s,返回s的父结点
+*/
+static Tree* replace1(Tree *T)
+{
+    Tree *p = NULL,*s = NULL;
+    if(T->left)
+    {
+        p = T;
+        s = T->left;
+        while(s->right)
+        {
+            p = s;
+            s = s->right;
+        }
+        T->data = s->data;
+        if(p == T)
+            p->left = s->left;
+        else
+            p->right = s->left;
+        free(s);
+    }else if(T->right)
+    {
+        p = T;
+        s = T->right;
+        while(s->left)
+        {
+            p = s;
+            s = s->left;
+        }
+        T->data = s->data;
+        if(p == T)
+            p->right = s->right;
+        else
+            p->left = s->right;
+        free(s);
+    }else{
+        p = T;
+        free(p);
+        p = NULL;
+    }
+    return p;
+}
+
+Tree* delete_node1(Tree *T,ElemType e)
+{
+    // T不存在，直接返回NULL,说明没有值为e的结点，直接退出返回
+    if(!T)
+        return (void*)-1;
+    if(T->data == e)
+    {
+        // 替代策略
+        return replace1(T);
+    }
+    Tree *node = NULL;
+    if(T->data > e)
+    {
+        node = delete_node1(T->left,e);
+        // 返回node == NULL
+        // 1. T->left本身为空，没有找到值为e的结点
+        // 2. T->left值为e，且T->right没有左右子树
+        if(node == NULL)
+        {
+            T->left = NULL; // 必不可少，在T->left->data == e的情况下，T->left被释放
+            node = T;
+        }
+    }else if(T->data < e)
+    {
+        node = delete_node1(T->right,e);
+        // 返回node == NULL
+        // 1. T->right本身为空，没有找到值为e的结点
+        // 2. T->right值为e，且T->right没有左右子树
+        if(node == NULL)    
+        {
+            T->right = NULL; // 必不可少，在T->right->data == e的情况下，T->left被释放
+            node =  T;
+        }
+    }
+    return node;
+}
+
+/* 从树中删除值为e的结点，结点可能不存在 */
+void delete1(Tree **T,ElemType e)
+{
+    Tree *tree = *T;
+    // 如果是一颗空树，没有查找的意义
+    if(!tree)
+    {
+        printf("AVL树为空树,没有查找的必要性!\n");
+        return;
+    }
+    // 如果e是树根结点的值，且其没有左右子树，销毁树
+    if(tree->data == e && !tree->left && !tree->right)
+    {
+        free(tree);     // 直接释放它
+        *T = NULL;      // 并且置空
+        printf("AVL树已经被删除干净!\n");
+        return;        
+    }else{
+        Tree* node = delete_node1(tree,e);
+        if(node == (void*)-1)
+        {
+            printf("值为%d的结点不存在\n",e);
+        }else{
+            // 在删除一个结点后，从删除结点的父结点p往上到根结点
+            // 平衡性可能发生变化，需要进行调整
+            adjust(T,node);
+            printf("值为%d的结点被删除,AVL完成调整\n",e);
+        }
+    }
+}
+
+
+
 /* 替代策略，不会直接删除结点T,
 *  而是找到它的前驱结点s，然后复制给结点T，相当于间接删除T。
 *  然后删除结点s,返回s的父结点
 */
 static Tree* replace(Tree *T)
 {
-    Tree *p,*s;
+    Tree *p = NULL,*s = NULL;
     if(T->left)
     {
         p = T;
@@ -146,7 +291,6 @@ static Tree* replace(Tree *T)
     }
     return p;
 }
-
 /* 
 如果返回NULL，表示不存在值为e的结点，删除失败，
 否则返回非NULL，其为实际被释放结点的父结点 
@@ -180,35 +324,6 @@ static Tree *delete_node(Tree *T,ElemType e,Tree *f)
         return delete_node(T->right,e,T);
     }
     return NULL;
-}
-
-/* 从树的根结点到node进行平衡性调整，不平衡需要再平衡，树各结点的深度信息也需要改变 */
-static void adjust(Tree **T,Tree *node)
-{
-    Tree *tree = *T;
-    if(tree->data > node->data)
-    {
-        adjust(&tree->left,node);
-    }
-    if(tree->data < node->data)
-    {
-        adjust(&tree->right,node);
-    }
-    int len1 = get_depth(tree->left);
-    int len2 = get_depth(tree->right);
-    if(len1 - len2 == 2)
-    {
-        // 进行向右的平衡旋转
-        right_balance(T);
-    }else if(len1 - len2 == -2)
-    {
-        // 进行向左的平衡旋转
-        left_balance(T);
-    }else{
-        // 不需要再平衡，但是根结点（*T）的深度需要更新，也可能没变
-        (*T)->dp = ((len1 > len2)? len1 : len2) + 1;
-    }
-    return;     
 }
 
 /* 从树中删除值为e的结点，结点可能不存在 */
