@@ -324,3 +324,13 @@ void drop(BTree **T,ElemType key)
     return;
 }
 
+
+void print_node(BTree *p)
+{
+    for(int i = 1; i <= p->key_num; ++i)
+    {
+        printf("%d ",p->key[i]);
+    }
+    printf("\n");
+    return;
+}

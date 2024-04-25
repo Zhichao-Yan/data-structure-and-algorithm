@@ -27,4 +27,5 @@ typedef struct{
 Result search(BTree *T,ElemType key);
 void insert(BTree **T,ElemType key);
 void drop(BTree **T,ElemType key);
+void print_node(BTree *p);
 #endif
