@@ -35,29 +35,7 @@ static int search_node(BTree *p,ElemType key)
     return i - 1;
 }
 
-/* 在B树中查找值key */
-Result search(BTree *T,ElemType key)
-{
-    BTree *p = T,*f = NULL;
-    int i = 0;
-    while(p)
-    {
-        i = binary_search(p->key,p->key_num,key);
-        //i = search_node(p,key);
-        if(i >0 && p->key[i] == key)
-        {
-            // 查找成功，key在p指向的结点中i位置，即p->key[i] == key
-            Result r = {p,i,yes};
-            return r;
-        }else{
-            f = p;
-            p = p->ptr[i];
-        }
-    }
-    // 查找是吧，f结点中没有key的值，其范围位于(p->key[i],p->key[i + 1])之间
-    Result r = {f,i,no};
-    return r;
-}
+
 
 /* B树为空时或者根结点被裂解时，插入根结点,只有一个键值*/
 static void insert_root(BTree **T,BTree *p,ElemType key,BTree *q)
@@ -83,32 +61,6 @@ static void insert_root(BTree **T,BTree *p,ElemType key,BTree *q)
 
 
 
-/* 在B树中插上值key */
-void insert(BTree **T,ElemType key)
-{
-    // B树为空
-    if(*T == NULL)
-    {
-        insert_root(T,NULL,key,NULL);
-        return;
-    }
-    // B树不为空
-    BTree *tree = *T;
-    // 在B树中查找key，返回结果r
-    Result r = search(tree,key);
-    if(r.tag == yes)
-    {
-        printf("值%d在B树中\n",key);
-    }else{
-        // 查找不成功
-        // key其范围位于(p->key[i],p->key[i + 1])之间
-        // 插入在第i和第i+1之间，即变成第i+1位置的数据
-        struct node *p = r.ptr;
-        int i = r.i + 1;
-        insert_node(T,p,i,key);
-    }
-    return;
-}
 
 /* 将key和ptr插入到结点信息中的第i个位置，原来从i到key_num数据后移一位 */
 static void insert_info(BTree *p,int i,ElemType key,struct node *ptr)
@@ -130,12 +82,17 @@ static struct node *split(struct node *p,int k)
     struct node *ptr = (struct node*)malloc(sizeof(struct node));
     ptr->key_num = m - k;  // m - k
     ptr->ptr[0] = p->ptr[k];
+    if(ptr->ptr[0])
+        ptr->ptr[0]->parent = ptr;  // ptr->ptr[0]的父指针从p移动到ptr
+    p->ptr[k] = NULL;
     for(int j = 1; j <= ptr->key_num; ++j)
     {
         ptr->key[j] = p->key[k + j];
         p->key[k + j] = 0;
 
         ptr->ptr[j] = p->ptr[k + j];
+        if(ptr->ptr[j])
+            ptr->ptr[j]->parent = ptr;
         p->ptr[k + j] = NULL;
     }
     p->key_num = k - 1;
@@ -158,6 +115,7 @@ static void insert_node(BTree **T,BTree *p,int i,ElemType key)
         {
             int k = (int)ceil((double)m/2);  // 去m/2的浮点数的天花板值
             key = p->key[k];        // 准备插入父结点的值key
+            p->key[k] = 0;
             ptr = split(p,k);       // 裂解结点p，返回指向结点的ptr
             struct node *father = p->parent;
             // 如果父结点存在
@@ -188,9 +146,63 @@ static void delete_info(BTree *p,int i)
         p->key[j - 1] = p->key[j];
         p->ptr[j - 1] = p->ptr[j];
     }
+    p->key[p->key_num] = 0;
+    p->ptr[p->key_num] = NULL;
     --p->key_num;
     return;
 }
+
+/* 在B树中查找值key */
+Result search(BTree *T,ElemType key)
+{
+    BTree *p = T,*f = NULL;
+    int i = 0;
+    while(p)
+    {
+        i = binary_search(p->key,p->key_num,key);
+        //i = search_node(p,key);
+        if(i >0 && p->key[i] == key)
+        {
+            // 查找成功，key在p指向的结点中i位置，即p->key[i] == key
+            Result r = {p,i,yes};
+            return r;
+        }else{
+            f = p;
+            p = p->ptr[i];
+        }
+    }
+    // 查找是吧，f结点中没有key的值，其范围位于(p->key[i],p->key[i + 1])之间
+    Result r = {f,i,no};
+    return r;
+}
+
+/* 在B树中插上值key */
+void insert(BTree **T,ElemType key)
+{
+    // B树为空
+    if(*T == NULL)
+    {
+        insert_root(T,NULL,key,NULL);
+        return;
+    }
+    // B树不为空
+    BTree *tree = *T;
+    // 在B树中查找key，返回结果r
+    Result r = search(tree,key);
+    if(r.tag == yes)
+    {
+        printf("值%d在B树中\n",key);
+    }else{
+        // 查找不成功
+        // key其范围位于(p->key[i],p->key[i + 1])之间
+        // 插入在第i和第i+1之间，即变成第i+1位置的数据
+        struct node *p = r.ptr;
+        int i = r.i + 1;
+        insert_node(T,p,i,key);
+    }
+    return;
+}
+
 
 /* 从B树中删除值key */
 void drop(BTree **T,ElemType key)
