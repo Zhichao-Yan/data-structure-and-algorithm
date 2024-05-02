@@ -171,7 +171,7 @@ Result search(BTree *T,ElemType key)
             p = p->ptr[i];
         }
     }
-    // 查找是吧，f结点中没有key的值，其范围位于(p->key[i],p->key[i + 1])之间
+    // 查找失败，f结点中没有key的值，其范围位于(p->key[i],p->key[i + 1])之间
     Result r = {f,i,no};
     return r;
 }
