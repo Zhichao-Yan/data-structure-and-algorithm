@@ -1,9 +1,9 @@
 #ifndef B_H
 #define B_H
+
 typedef int ElemType;
 typedef int Record;
 #include <iostream>
-#include <typeinfo>
 #include <cmath>
 
 class node{
@@ -41,7 +41,10 @@ public:
     leaf_node *next;            // 链接的下一个叶子结点 
     leaf_node(int order = 3):node(order,true),data(new Record*[order + 1]),next(nullptr){}  
     ~leaf_node(){ delete[] data; } // 释放记录指针数组
-    void insert(Record *r);
+    void insert(Record *r);                     // 插入记录
+    void drop(Record *r);                     // 插入记录
+    Record* search1(ElemType key);           // 返回记录
+    int leaf_node::search2(ElemType key);   // 返回关键字位置
     virtual leaf_node* split() override;
 };
 
@@ -53,6 +56,9 @@ public:
     int order;
     bp_tree(int od = 3):root(nullptr),sqt(nullptr),order(od){}
     void insert(Record *r);
+    node* search_node(ElemType target);
+    Record* search(ElemType target);
+    void drop(Record *r);
 };
 
 #endif
