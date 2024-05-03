@@ -41,10 +41,11 @@ public:
     leaf_node *next;            // 链接的下一个叶子结点 
     leaf_node(int order = 3):node(order,true),data(new Record*[order + 1]),next(nullptr){}  
     ~leaf_node(){ delete[] data; } // 释放记录指针数组
-    void insert(Record *r);                     // 插入记录
-    void drop(Record *r);                     // 插入记录
-    Record* search1(ElemType key);           // 返回记录
-    int leaf_node::search2(ElemType key);   // 返回关键字位置
+    void insert(Record *r);                 // 往叶子结点插入记录
+    void insert(ElemType key, Record *r);   // 往叶子结点中插入关键字和记录
+    void drop(ElemType key);                // 从叶子结点删除关键字代表的记录
+    void drop(Record *r);                   // 删除记录r
+    Record* search(ElemType key);           // 返回记录
     virtual leaf_node* split() override;
 };
 
@@ -55,10 +56,14 @@ public:
     leaf_node *sqt;
     int order;
     bp_tree(int od = 3):root(nullptr),sqt(nullptr),order(od){}
-    void insert(Record *r);
+    void insert(Record *r);     // 关键字包含在记录中
+    void insert(ElemType key,Record *r);    // 插入关键字和其相关的记录指针
+    void drop(Record *r);       // 关键字包含在记录中
+    void drop(ElemType key);    // 删除关键字和其关联的记录指针
+    void check1(node *ptr);     // 检查结点的关键字个数是否超过限制
+    void check2(node *ptr);     // 检查结点的关键字个数是否少于限制
     node* search_node(ElemType target);
     Record* search(ElemType target);
-    void drop(Record *r);
 };
 
 #endif

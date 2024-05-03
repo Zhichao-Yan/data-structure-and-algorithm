@@ -66,7 +66,20 @@ void inner_node::insert(node *ptr,ElemType key)
 void leaf_node::insert(Record *r)
 {
     ElemType key = *r;  // 得到记录中的关键字
-    int i = binary_search(key) + 1;    // 获得插入位置
+    insert(key,r);      // 调用重载函数
+    return;
+}
+
+/* 往叶子结点中插入关键字和记录，关键字无法由记录获取的情况 */
+void leaf_node::insert(ElemType key, Record *r)
+{
+    int i = binary_search(key);    // 查找可能的位置
+    if(i > 0 && keys[i] == key)
+    {
+        std::cout << "关键字" << key << "对应的记录已经存在" << std::endl;
+        return;
+    }
+    ++i;    // 获得插入位置
     for(int k = key_num; k >= i; --k)
     {
         keys[k + 1] = keys[k];
@@ -78,8 +91,39 @@ void leaf_node::insert(Record *r)
     return;
 }
 
+/* 从叶子结点中删除记录r */
+void leaf_node::drop(Record *r)
+{
+    ElemType key = *r;  // 得到记录中的关键字
+    drop(key);
+    return;
+}
+
+/* 从叶子结点中删除key关联的记录 */
+void leaf_node::drop(ElemType key)
+{
+    int i = binary_search(key);    // 查找可能的位置
+    // key关键字不在叶子结点中
+    if(i == 0 || (i > 0 && keys[i] != key))
+    {
+        std::cout << "叶子结点中不存在该关键字和对应的记录！" << std::endl;
+        return;
+    }
+    // i是关键字key在叶子结点中的位置
+    // 为了删除key和对应的记录，后面的数据从后往前移动
+    for(int j = i + 1; j <= key_num; ++j)
+    {
+        keys[j - 1] = keys[j];
+        data[j - 1] = data[j];
+    }
+    keys[key_num] = 0;
+    data[key_num] = NULL;
+    --key_num;
+    return;
+}
+
 /* 在叶子结点中查找记录并且返回记录指针 */
-Record* leaf_node::search1(ElemType key)
+Record* leaf_node::search(ElemType key)
 {
     // 在叶子结点中查找位置
     int i = binary_search(key);
@@ -87,17 +131,6 @@ Record* leaf_node::search1(ElemType key)
     if((i == 0) || (i > 0 && keys[i] != key))
         return nullptr;
     return data[i];
-}
-
-/* 在叶子结点中查找记录并且返回关键字位置 */
-int leaf_node::search2(ElemType key)
-{
-    // 在叶子结点中查找位置
-    int i = binary_search(key);
-    // 没有找到该关键字
-    if((i == 0) || (i > 0 && keys[i] != key))
-        return 0;
-    return i;
 }
 
 /* 裂解叶子结点 */
@@ -127,7 +160,7 @@ leaf_node* leaf_node::split()
 node* bp_tree::search_node(ElemType target)
 {   
     node *ptr = root;
-    while(ptr &&  !ptr->leaf)
+    while(ptr && !ptr->leaf)
     {
         int i = ptr->binary_search(target);
         inner_node *p = static_cast<inner_node*>(ptr);
@@ -144,31 +177,39 @@ Record* bp_tree::search(ElemType target)
     // 转换成叶子结点
     leaf_node *p = static_cast<leaf_node*>(ptr);
     // 在叶子结点中根据关键字查找记录
-    return p->search1(target);
+    return p->search(target);
 }
-
 
 /* 在B+树中插入记录 */
 void bp_tree::insert(Record *r)
 {
+    ElemType key = *r;  // 得到待插入记录中的关键字
+    insert(key,r);
+    return;
+}
+
+/* 在B+树中插入关键字和其关联的记录指针 */
+void bp_tree::insert(ElemType key,Record *r)
+{
     if(root == sqt && root == nullptr)
     {
         leaf_node *ptr = new leaf_node(order);
-        ptr->insert(r);
+        ptr->insert(key,r);
         root = sqt = ptr;
         return;
     }
-    ElemType key = *r;  // 得到待插入记录中的关键字
     node *ptr = search_node(key); // 查找关键字应该所在的叶子结点
     leaf_node *q = static_cast<leaf_node*>(ptr);    // 转换成叶子结点
-    // 在叶子结点q中查找关键字key
-    if(q->search1(key) != nullptr)  // B+树中已经存在该关键字代表的记录，退出
-    {
-        std::cout << "关键字" << key << "代表的记录已经存在" << std::endl;
-        return;
-    }
-    // B+树中暂时不存在记录，在叶子结点进行插入操作
-    q->insert(r);
+    q->insert(key,r);   // 在叶子结点进行插入操作
+    check1(ptr);     // 坚持刚刚插入的叶子结点
+    return;
+}
+
+
+
+/* 检查结点的关键字个数是否超过限制 */
+void bp_tree::check1(node *ptr)
+{
     // 插入后处理
     while(ptr)
     {
@@ -203,23 +244,51 @@ void bp_tree::insert(Record *r)
         }
         ptr = ptr->parent;
     }
+    return;
 }
 
+/* 从B+树中删除记录r */
 void bp_tree::drop(Record *r)
+{
+    ElemType key = *r;  // 得到待删除记录中的关键字
+    drop(key);
+    return;
+}
+
+/* 从B+树中删除关键字key和关联的记录指针 */
+void bp_tree::drop(ElemType key)
 {
     if(root == sqt && root == nullptr)
     {
         std::cout << "B+树当前为空，删除失败" << std::endl;
         return;
     }
-    ElemType key = *r;  // 得到待删除记录中的关键字
     node *ptr = search_node(key); // 查找关键字应该所在的叶子结点
     leaf_node *q = static_cast<leaf_node*>(ptr);    // 转换成叶子结点
-    int k = q->search2(key);    // 在叶子结点中查找关键字的位置
-    if(k == 0)  // B+树中已经
-    {
-        std::cout << "B+树不空，但是记录不存在，删除失败！" << std::endl;
-        return;
-    }
-    
+    q->drop(key);
+    check2(ptr);
+    return;
 }
+
+void bp_tree::check2(node *ptr)
+{
+    
+    while(ptr)
+    {
+
+    }
+}
+
+
+
+
+/* 在叶子结点中查找记录并且返回关键字位置 */
+// int leaf_node::search2(ElemType key)
+// {
+//     // 在叶子结点中查找位置
+//     int i = binary_search(key);
+//     // 没有找到该关键字
+//     if((i == 0) || (i > 0 && keys[i] != key))
+//         return 0;
+//     return i;
+// }
