@@ -9,5 +9,6 @@ int main()
         bp.insert(&r[i]);
     }
     bp.drop(22);
-    
+    bp.drop(15);
+
 }

@@ -32,6 +32,7 @@ public:
     ~inner_node(){ delete[] chd; } // 释放孩子指针数组 
     virtual inner_node* split() override;
     void insert(node *ptr,ElemType up);
+    void drop(int i);
 };
 
 // 作为b+树的叶节点
@@ -43,8 +44,11 @@ public:
     ~leaf_node(){ delete[] data; } // 释放记录指针数组
     void insert(Record *r);                 // 往叶子结点插入记录
     void insert(ElemType key, Record *r);   // 往叶子结点中插入关键字和记录
+    void insert(ElemType key, Record *r, int i); // 将关键字和记录指针插入在i位置
     void drop(ElemType key);                // 从叶子结点删除关键字代表的记录
     void drop(Record *r);                   // 删除记录r
+    void merge(leaf_node *ptr);             // 把右边叶子结点合并到当前叶子结点中
+    void drop(int i);                       // 删除位置i处的关键字和记录
     Record* search(ElemType key);           // 返回记录
     virtual leaf_node* split() override;
 };
