@@ -36,7 +36,7 @@ public:
 
     void insert(ElemType key,node *ptr);    // 插入关键字和结点指针到索引结点
     void insert(ElemType key,node *ptr,int i);  // 插入关键字和结点指针到索引结点i位置
-    void drop(int i);
+    void drop(unsigned int i);
 };
 
 // 作为b+树的叶节点
@@ -48,12 +48,13 @@ public:
     ~leaf_node(){ delete[] data; } // 释放记录指针数组
     virtual leaf_node* split() override;                // 裂解叶子结点
     virtual void merge(node *ptr) override;             // 把右边叶子结点合并到当前叶子结点中
+
     void insert(Record *r);                 // 往叶子结点插入记录
     void insert(ElemType key, Record *r);   // 往叶子结点中插入关键字和记录
     void insert(ElemType key, Record *r, int i); // 将关键字和记录指针插入在i位置
     void drop(ElemType key);                // 从叶子结点删除关键字代表的记录
     void drop(Record *r);                   // 删除记录r
-    void drop(unsigned int i);                       // 删除位置i处的关键字和记录
+    void drop(unsigned int i);              // 删除位置i处的关键字和记录
     Record* search(ElemType key);           // 返回记录
 };
 
@@ -68,10 +69,11 @@ public:
     void insert(ElemType key,Record *r);    // 插入关键字和其相关的记录指针
     void drop(Record *r);       // 关键字包含在记录中
     void drop(ElemType key);    // 删除关键字和其关联的记录指针
+    Record* search(ElemType target);
+private:
     void check1(node *ptr);     // 检查结点的关键字个数是否超过限制
     void check2(node *ptr);     // 检查结点的关键字个数是否少于限制
     node* search_node(ElemType target);
-    Record* search(ElemType target);
 };
 
 #endif

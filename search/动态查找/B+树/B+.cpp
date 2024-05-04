@@ -46,7 +46,7 @@ void inner_node::insert(ElemType key,node *ptr,int i)
 }
 
 /* 删除索引结点位置i处的关键字和记录 */
-void inner_node::drop(int i)
+void inner_node::drop(unsigned int i)
 {
     // 为了删除key和对应的记录，后面的数据从后往前移动
     for(int j = i + 1; j <= key_num; ++j)
@@ -367,7 +367,17 @@ void bp_tree::check2(node *ptr)
                     // 更新子结点ptr2对应的父结点中的关键字
                     father->keys[i] = ptr2->keys[1];
                 }else{
-
+                    inner_node *ptr1 = static_cast<inner_node*>(left);
+                    inner_node *ptr2 = static_cast<inner_node*>(ptr); 
+                    // 父结点关键字下移
+                    ptr2->keys[0] = father->keys[i];
+                    ElemType key = ptr1->keys[ptr1->key_num];
+                    node *qtr = ptr1->chd[ptr1->key_num];
+                    ptr1->drop(ptr1->key_num);
+                    ptr2->insert(key,qtr,0);
+                    // 上移
+                    father->keys[i] = ptr2->keys[0];
+                    ptr2->keys[0] = 0;
                 }
                 break;
             }else if(right && right->key_num > bottom)  // 使用右兄弟的最小关键字补充ptr，使ptr满足数量条件
@@ -382,29 +392,42 @@ void bp_tree::check2(node *ptr)
                     // 获取右兄弟的最小关键字和其记录指针
                     ElemType key = ptr2->keys[1];
                     Record *r = ptr2->data[1];
+                    // 插入到ptr的尾部
+                    ptr1->insert(key,r,ptr1->key_num + 1);
                     // 删除右兄弟最小关键字和记录指针
                     unsigned int k = 1;
                     ptr2->drop(k);
-                    // 插入到ptr的尾部
-                    ptr1->insert(key,r,ptr1->key_num + 1);
                     // 更新父结点中的i+1处关键字
                     father->keys[i + 1] = ptr2->keys[1];
                 }else{
-                    
+                    inner_node *ptr1 = static_cast<inner_node*>(ptr);
+                    inner_node *ptr2 = static_cast<inner_node*>(right);
+                    // 父结点关键字下移
+                    ElemType key = father->keys[i + 1];
+                    node* qtr = ptr2->chd[0];
+                    // 插入到尾部
+                    ptr1->insert(key,qtr,ptr1->key_num + 1);
+                    // 删除右兄弟前面的数据
+                    unsigned int k = 0;
+                    ptr2->drop(k);
+                    // 将右兄弟最小关键字上移动
+                    father->keys[i + 1] = ptr2->keys[0];
+                    ptr2->keys[0] = 0;
                 }
                 break;
             }else if(left && left->key_num == bottom)
             {
+                // 如果是内部索引结点的合并，操作有所区别
                 if(!ptr->leaf)
-                    ptr->keys[0] = father->keys[i];
+                    ptr->keys[0] = father->keys[i]; // 将父结点中对应的关键字下放到0位置，一起合并
                 left->merge(ptr);
                 father->drop(i);
                 ptr = father;
             }else if(right && right->key_num == bottom)
             {
-                // 如果是右兄弟是叶子结点,代表ptr本身也是叶子结点
+                // 如果是内部索引结点的合并，操作有所区别
                 if(!right->leaf)
-                    right->keys[0] = father->keys[i + 1];
+                    right->keys[0] = father->keys[i + 1]; // 将父结点中对应的关键字下放到0位置，一起合并
                 ptr->merge(right);
                 father->drop(i + 1);
                 ptr = father;
