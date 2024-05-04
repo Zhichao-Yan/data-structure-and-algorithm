@@ -22,6 +22,7 @@ public:
     ~node() { delete[] keys; } // 假设 key 是动态分配的，需要在析构函数中释放  
     int binary_search(ElemType target);
     virtual node* split() = 0;
+    virtual void merge(node *ptr) = 0;
 };
 
 // 作为b+树的内部节点
@@ -31,7 +32,10 @@ public:
     inner_node(int order = 3):node(order,false),chd(new node*[order + 1]){}  
     ~inner_node(){ delete[] chd; } // 释放孩子指针数组 
     virtual inner_node* split() override;
-    void insert(node *ptr,ElemType up);
+    virtual void merge(node *ptr) override;        // 把右边索引结点合并到当前索引结点中
+
+    void insert(ElemType key,node *ptr);    // 插入关键字和结点指针到索引结点
+    void insert(ElemType key,node *ptr,int i);  // 插入关键字和结点指针到索引结点i位置
     void drop(int i);
 };
 
@@ -42,15 +46,15 @@ public:
     leaf_node *next;            // 链接的下一个叶子结点 
     leaf_node(int order = 3):node(order,true),data(new Record*[order + 1]),next(nullptr){}  
     ~leaf_node(){ delete[] data; } // 释放记录指针数组
+    virtual leaf_node* split() override;                // 裂解叶子结点
+    virtual void merge(node *ptr) override;             // 把右边叶子结点合并到当前叶子结点中
     void insert(Record *r);                 // 往叶子结点插入记录
     void insert(ElemType key, Record *r);   // 往叶子结点中插入关键字和记录
     void insert(ElemType key, Record *r, int i); // 将关键字和记录指针插入在i位置
     void drop(ElemType key);                // 从叶子结点删除关键字代表的记录
     void drop(Record *r);                   // 删除记录r
-    void merge(leaf_node *ptr);             // 把右边叶子结点合并到当前叶子结点中
-    void drop(int i);                       // 删除位置i处的关键字和记录
+    void drop(unsigned int i);                       // 删除位置i处的关键字和记录
     Record* search(ElemType key);           // 返回记录
-    virtual leaf_node* split() override;
 };
 
 class bp_tree

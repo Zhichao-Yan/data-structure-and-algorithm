@@ -22,6 +22,43 @@ int node::binary_search(ElemType target)
     return right;  // 始终返回right 
 }
 
+
+/* 向索引结点中插入关键字和结点指针 */
+void inner_node::insert(ElemType key,node *ptr)
+{
+    int i = binary_search(key) + 1;
+    insert(key,ptr,i);
+    return;
+}
+
+/* 插入关键字和结点指针到索引结点i位置 */
+void inner_node::insert(ElemType key,node *ptr,int i)
+{
+    for(int k = key_num; k >= i; --k)
+    {
+        keys[k + 1] = keys[k];
+        chd[k + 1] = chd[k];
+    }
+    keys[i] = key;
+    chd[i] = ptr;
+    ++key_num;
+    return;
+}
+
+/* 删除索引结点位置i处的关键字和记录 */
+void inner_node::drop(int i)
+{
+    // 为了删除key和对应的记录，后面的数据从后往前移动
+    for(int j = i + 1; j <= key_num; ++j)
+    {
+        keys[j - 1] = keys[j];
+        chd[j - 1] = chd[j];
+    }
+    keys[key_num] = 0;
+    chd[key_num] = NULL;
+    --key_num;
+}
+
 /* 裂解内部索引结点 */
 inner_node* inner_node::split()
 {
@@ -47,33 +84,17 @@ inner_node* inner_node::split()
     return ptr;
 }
 
-/* 向索引结点中插入关键字和结点指针 */
-void inner_node::insert(node *ptr,ElemType key)
+/* 把右边索引结点合并到当前索引结点中 */
+void inner_node::merge(node *ptr)
 {
-    int i = binary_search(key) + 1;
-    for(int k = key_num; k >= i; --k)
+    inner_node *inner = static_cast<inner_node*>(ptr);
+    for(int k = 0; k <= inner->key_num; ++k)
     {
-        keys[k + 1] = keys[k];
-        chd[k + 1] = chd[k];
+        insert(inner->keys[k],inner->chd[k],key_num + 1);
+        inner->chd[k]->parent = this;
     }
-    keys[i] = key;
-    chd[i] = ptr;
-    ++key_num;
+    delete inner; // 释放结点ptr
     return;
-}
-
-/* 删除索引结点位置i处的关键字和记录 */
-void inner_node::drop(int i)
-{
-    // 为了删除key和对应的记录，后面的数据从后往前移动
-    for(int j = i + 1; j <= key_num; ++j)
-    {
-        keys[j - 1] = keys[j];
-        chd[j - 1] = chd[j];
-    }
-    keys[key_num] = 0;
-    chd[key_num] = NULL;
-    --key_num;
 }
 
 
@@ -114,7 +135,7 @@ void leaf_node::insert(ElemType key, Record *r)
 }
 
 /* 删除位置i处的关键字和记录 */
-void leaf_node::drop(int i)
+void leaf_node::drop(unsigned int i)
 {
     // 为了删除key和对应的记录，后面的数据从后往前移动
     for(int j = i + 1; j <= key_num; ++j)
@@ -138,7 +159,7 @@ void leaf_node::drop(Record *r)
 /* 从叶子结点中删除key关联的记录 */
 void leaf_node::drop(ElemType key)
 {
-    int i = binary_search(key);    // 查找可能的位置
+    unsigned int i = binary_search(key);    // 查找可能的位置
     // key关键字不在叶子结点中
     if(i == 0 || (i > 0 && keys[i] != key))
     {
@@ -149,7 +170,6 @@ void leaf_node::drop(ElemType key)
     drop(i);
     return;
 }
-
 
 
 /* 在叶子结点中查找记录并且返回记录指针 */
@@ -186,14 +206,15 @@ leaf_node* leaf_node::split()
 }
 
 /* 把结点ptr的关键字和对应记录指针合并到当前结点中 */
-void leaf_node::merge(leaf_node *ptr)
+void leaf_node::merge(node *ptr)
 {
+    leaf_node *leaf = static_cast<leaf_node*>(ptr);
     for(int k = 1; k <= ptr->key_num; ++k)
     {
-        insert(ptr->keys[k],ptr->data[k],key_num + 1);
+        insert(leaf->keys[k],leaf->data[k],key_num + 1);
     }
-    next = ptr->next;
-    delete ptr; // 释放结点ptr
+    next = leaf->next;
+    delete leaf; // 释放结点ptr
     return;
 }
 
@@ -303,7 +324,7 @@ void bp_tree::check1(node *ptr)
         }else{
             inner_node * father = static_cast<inner_node*>(ptr->parent);
             qtr->parent = father;
-            father->insert(qtr,up);
+            father->insert(up,qtr);
         }
         ptr = ptr->parent;
     }
@@ -318,11 +339,10 @@ void bp_tree::check2(node *ptr)
     {
         if(ptr->key_num >= bottom)
             break;
-
-        ElemType key = ptr->keys[1];    // 获得该结点的一个关键字，用于查找ptr在father中的位置，方便查找兄弟结点
         inner_node *father = static_cast<inner_node*>(ptr->parent); // 获得其父结点
         if(father)
         {
+            ElemType key = ptr->keys[1];    // 获得该结点的一个关键字，用于查找ptr在father中的位置，方便查找兄弟结点
             int i = father->binary_search(key); // 获得子结点在其中的位置
             node *left = nullptr,*right = nullptr;
             if(i != 0)
@@ -340,7 +360,8 @@ void bp_tree::check2(node *ptr)
                     ElemType key = ptr1->keys[ptr1->key_num];
                     Record *r = ptr1->data[ptr1->key_num];
                     // 删除左兄弟的最后一个关键字和记录
-                    ptr1->drop(ptr1->key_num);
+                    unsigned int k  = ptr1->key_num;
+                    ptr1->drop(k);
                     // 插入到ptr的首部位置
                     ptr2->insert(key,r,1);
                     // 更新子结点ptr2对应的父结点中的关键字
@@ -362,7 +383,8 @@ void bp_tree::check2(node *ptr)
                     ElemType key = ptr2->keys[1];
                     Record *r = ptr2->data[1];
                     // 删除右兄弟最小关键字和记录指针
-                    ptr2->drop(1);
+                    unsigned int k = 1;
+                    ptr2->drop(k);
                     // 插入到ptr的尾部
                     ptr1->insert(key,r,ptr1->key_num + 1);
                     // 更新父结点中的i+1处关键字
@@ -373,45 +395,44 @@ void bp_tree::check2(node *ptr)
                 break;
             }else if(left && left->key_num == bottom)
             {
-                // 如果是左兄弟是叶子结点,代表ptr本身也是叶子结点
-                if(left->leaf)
-                {
-                    leaf_node *ptr1 = static_cast<leaf_node*>(left);
-                    leaf_node *ptr2 = static_cast<leaf_node*>(ptr);
-                    ptr1->merge(ptr2);
-                    father->drop(i);
-                    ptr = father;
-                }
+                if(!ptr->leaf)
+                    ptr->keys[0] = father->keys[i];
+                left->merge(ptr);
+                father->drop(i);
+                ptr = father;
             }else if(right && right->key_num == bottom)
             {
                 // 如果是右兄弟是叶子结点,代表ptr本身也是叶子结点
-                if(right->leaf)
-                {
-                    // i位置的子结点
-                    leaf_node *ptr1 = static_cast<leaf_node*>(ptr);
-                    // i + 1位置的子结点
-                    leaf_node *ptr2 = static_cast<leaf_node*>(right);
-                    ptr1->merge(ptr2);
-                    father->drop(i + 1);
-                    ptr = father;
-                }
+                if(!right->leaf)
+                    right->keys[0] = father->keys[i + 1];
+                ptr->merge(right);
+                father->drop(i + 1);
+                ptr = father;
             }
+        }else{
+            // 没有父结点，所以ptr指向根结点
+            // 根结点必须最少有一个关键字
+            if(ptr->key_num < 1)
+            {
+                // 如果它还是一个叶子结点,也是根结点，因此它是B+树中最后一个结点
+                if(ptr->leaf) 
+                {
+                    root = nullptr;
+                    sqt = nullptr;
+                }else{
+                    // 它是一个内部索引结点
+                    // 删除根结点，要变更B+树的root指针变量
+                    inner_node *p = static_cast<inner_node*>(ptr);
+                    root = p->chd[0];
+                }
+                delete ptr;       // 释放原来的根结点
+                ptr = nullptr;
+                break;
+            }else
+                break;      // 可以直接退出，不再向上操作
         }
-
     }
 
 }
 
 
-
-
-/* 在叶子结点中查找记录并且返回关键字位置 */
-// int leaf_node::search2(ElemType key)
-// {
-//     // 在叶子结点中查找位置
-//     int i = binary_search(key);
-//     // 没有找到该关键字
-//     if((i == 0) || (i > 0 && keys[i] != key))
-//         return 0;
-//     return i;
-// }
