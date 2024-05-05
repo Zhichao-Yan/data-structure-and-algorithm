@@ -358,7 +358,8 @@ void bp_tree::drop(ElemType key)
 }
 
 /* 检查结点的关键字个数是否超过限制 */
-void bp_tree::check1(node *ptr)
+/* todo: 将需要分裂的结点做避免分裂，将多出的关键字移动兄弟结点中 */
+void bp_tree::check1(node *ptr) 
 {
     while (ptr) // 插入后处理
     {
