@@ -31,7 +31,7 @@ void inner_node::insert(ElemType key,node *ptr)
     return;
 }
 
-/* 插入关键字和结点指针到索引结点i位置 */
+/* 插入关键字和子结点指针到索引结点i位置 */
 void inner_node::insert(ElemType key,node *ptr,int i)
 {
     for(int k = key_num; k >= i; --k)
@@ -41,6 +41,7 @@ void inner_node::insert(ElemType key,node *ptr,int i)
     }
     keys[i] = key;
     chd[i] = ptr;
+    ptr->parent = this;
     ++key_num;
     return;
 }
@@ -62,6 +63,7 @@ void inner_node::drop(unsigned int i)
 /* 裂解内部索引结点 */
 inner_node* inner_node::split()
 {
+    // 内部结点分裂后的新的内部索引结点
     inner_node *ptr = new inner_node(od);
     int k = (int)ceil((double)od/2);
     int start = k + 1; 
@@ -74,6 +76,7 @@ inner_node* inner_node::split()
     for(int i = 0; i < len; i++)
     {
         ptr->chd[1 + i] = chd[start + i];
+        // 子结点的父结点应该执行新的内部索引结点
         ptr->chd[1 + i]->parent = ptr;
         ptr->keys[1 + i] = keys[start + i];
         ptr->key_num++;
@@ -91,6 +94,7 @@ void inner_node::merge(node *ptr)
     for(int k = 0; k <= inner->key_num; ++k)
     {
         insert(inner->keys[k],inner->chd[k],key_num + 1);
+        // 合并过来的子结点的父结点要调整
         inner->chd[k]->parent = this;
     }
     delete inner; // 释放结点ptr
@@ -199,8 +203,8 @@ leaf_node* leaf_node::split()
         keys[start + i] = 0;
         key_num--;
     }
-    if(next)
-        ptr->next = next;
+    // 链接新的叶子结点
+    ptr->next = next;
     next = ptr;
     return ptr;
 }
@@ -213,6 +217,7 @@ void leaf_node::merge(node *ptr)
     {
         insert(leaf->keys[k],leaf->data[k],key_num + 1);
     }
+    // 叶子结点合并后需保存链表的连续
     next = leaf->next;
     delete leaf; // 释放结点ptr
     return;
