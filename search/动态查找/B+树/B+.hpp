@@ -23,6 +23,7 @@ public:
     int binary_search(ElemType target);
     virtual node* split() = 0;
     virtual void merge(node *ptr) = 0;
+    virtual void borrow(node *ptr) = 0;
 };
 
 // 作为b+树的内部节点
@@ -33,6 +34,7 @@ public:
     ~inner_node(){ delete[] chd; } // 释放孩子指针数组 
     virtual inner_node* split() override;
     virtual void merge(node *ptr) override;        // 把右边索引结点合并到当前索引结点中
+    virtual void borrow(node *ptr) override;
 
     void insert(ElemType key,node *ptr);    // 插入关键字和结点指针到索引结点
     void insert(ElemType key,node *ptr,int i);  // 插入关键字和结点指针到索引结点i位置
@@ -48,6 +50,7 @@ public:
     ~leaf_node(){ delete[] data; } // 释放记录指针数组
     virtual leaf_node* split() override;                // 裂解叶子结点
     virtual void merge(node *ptr) override;             // 把右边叶子结点合并到当前叶子结点中
+    virtual void borrow(node *ptr) override;
 
     void insert(Record *r);                 // 往叶子结点插入记录
     void insert(ElemType key, Record *r);   // 往叶子结点中插入关键字和记录
