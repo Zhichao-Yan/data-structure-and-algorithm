@@ -331,7 +331,7 @@ void bp_tree::check1(node *ptr)
     return;
 }
 
-
+/* 检查结点的关键字个数是否少于限制 */
 void bp_tree::check2(node *ptr)
 {
     int bottom = (int)ceil((double)order/2) - 1;
@@ -344,6 +344,7 @@ void bp_tree::check2(node *ptr)
         {
             ElemType key = ptr->keys[1];    // 获得该结点的一个关键字，用于查找ptr在father中的位置，方便查找兄弟结点
             int i = father->binary_search(key); // 获得子结点在其中的位置
+            // 获得可能的左右兄弟结点
             node *left = nullptr,*right = nullptr;
             if(i != 0)
                 left = father->chd[i - 1];
@@ -459,3 +460,21 @@ void bp_tree::check2(node *ptr)
 }
 
 
+void bp_tree::traverse()
+{
+    if(sqt == nullptr)
+        return;
+    leaf_node *ptr = sqt;
+    while(ptr)
+    {
+        for(int i = 1; i <= ptr->key_num; ++i)
+        {
+            std::cout << ptr->keys[i] << '|';
+        }
+        ptr = ptr->next;
+        if(ptr)
+            std::cout << "->";
+    }
+    std::cout << std::endl;
+    return;
+}

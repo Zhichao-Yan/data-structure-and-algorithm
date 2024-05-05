@@ -69,7 +69,8 @@ public:
     void insert(ElemType key,Record *r);    // 插入关键字和其相关的记录指针
     void drop(Record *r);       // 关键字包含在记录中
     void drop(ElemType key);    // 删除关键字和其关联的记录指针
-    Record* search(ElemType target);
+    Record* search(ElemType target);    // 搜索关键字代表的记录
+    void traverse();    // 遍历叶子结点
 private:
     void check1(node *ptr);     // 检查结点的关键字个数是否超过限制
     void check2(node *ptr);     // 检查结点的关键字个数是否少于限制

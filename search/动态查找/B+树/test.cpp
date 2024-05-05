@@ -8,6 +8,7 @@ int main()
     {
         bp.insert(&r[i]);
     }
+    bp.traverse();
     bp.drop(9);
     bp.drop(8);
     // bp.drop(15);
