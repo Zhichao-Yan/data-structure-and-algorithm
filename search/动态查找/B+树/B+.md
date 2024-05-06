@@ -88,3 +88,5 @@ b/b+树的非根节点都需要满足节点数不少于ceil(M/2)-1个，在删�
 * [B+树的几点总结](https://www.jianshu.com/p/6f68d3c118d6)
 * [B+树的相关原理及实现](https://ivanzz1001.github.io/records/post/data-structure/2018/06/16/ds-bplustree#72-innodb)
 * [为什么MySQL数据库索引选择使用B+树](https://www.cnblogs.com/tiancai/p/9024351.html)
+* [MySQL索引背后的数据结构及算法原理](http://blog.codinglabs.org/articles/theory-of-mysql-index.html)
+* [MySQL索引背后的数据结构及算法原理](http://blog.codinglabs.org/articles/theory-of-mysql-index.html)
