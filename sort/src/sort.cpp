@@ -15,6 +15,7 @@ void SelectSort(vector<int> &v)
         if(min!=i)
             swap(v[i],v[min]);
     }
+    return; 
 }
 
 /* 锦标赛排序 */
