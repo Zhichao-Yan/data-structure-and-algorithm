@@ -1,8 +1,8 @@
-#ifndef SORT_H
-#define SORT_H
+#ifndef S_H
+#define S_H
 
-#include <vector>
 #include <iostream>
+#include <vector>
 
 void SelectSort(vector<int> &v);                    // 选择排序
 void TournamentSort(vector<int> &v);                // 锦标赛排序
@@ -17,4 +17,5 @@ void TwoWayInsertSort(vector<int> &v);              // 二路插入排序
 void ShellSort(vector<int> &v,int dlta[],int t);    // 希尔排序
 
 void MergeSort(vector<int> &v); // 归并排序
+
 #endif
