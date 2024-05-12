@@ -7,7 +7,7 @@ bool search(Tree *T,ElemType e,Tree **p)
     if(T == NULL)
     {
         *p = NULL;
-        return false;
+        return false; 
     }
     if(T->e == e)
     {
@@ -139,7 +139,7 @@ static void delete_node(Tree *T,ElemType e,Tree *f)
 }
 
 /* 删除树中值为e的结点 */
-void delete(Tree **T,ElemType e)
+void drop(Tree **T,ElemType e)
 {
     Tree *tree = *T;
     if(tree->e == e)    // 删除的结点刚刚好是根结点

@@ -11,15 +11,15 @@ public:
     node *parent;      // 父结点
     int key_num;        // 关键字和子树数量
     ElemType *keys;    // 结点关键字，0号单元不用
+    int od;            // 结点的阶数
     bool leaf;         // 判断是叶子结点还是内部结点
-    int od;
     node(int order = 3, bool type = false):
-        od(order),
-        key_num(0),
         parent(nullptr),
+        key_num(0),
         keys(new ElemType[order + 1]),
+        od(order),
         leaf(type){}
-    ~node() { delete[] keys; } // 假设 key 是动态分配的，需要在析构函数中释放  
+    virtual ~node() { delete[] keys; } // 假设 key 是动态分配的，需要在析构函数中释放  
     int binary_search(ElemType target);
     virtual node* split() = 0;
     virtual void merge(node *ptr) = 0;

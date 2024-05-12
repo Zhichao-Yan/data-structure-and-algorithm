@@ -8,6 +8,7 @@ static int get_depth(Tree *T)
     return 0;
 }
 
+
 /* 更新结点的深度 */
 static void set_depth(Tree *T)
 {

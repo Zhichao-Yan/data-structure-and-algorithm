@@ -23,17 +23,17 @@ static int binary_search(ElemType key[], int size, ElemType target)
 }
 
 /* 在结点中查找值key的位置范围 */
-static int search_node(BTree *p,ElemType key)
-{
-    int i;
-    for(i = 1; i <= p->key_num; ++i)
-    {
-        if(key < p->key[i])
-            break;
+// static int search_node(BTree *p,ElemType key)
+// {
+//     int i;
+//     for(i = 1; i <= p->key_num; ++i)
+//     {
+//         if(key < p->key[i])
+//             break;
 
-    }
-    return i - 1;
-}
+//     }
+//     return i - 1;
+// }
 
 
 
@@ -210,7 +210,7 @@ void drop(BTree **T,ElemType key)
     // B树为空，直接返回
     if(*T == NULL)
         return;
-    BTree *tree;
+    BTree *tree = *T;
     Result r = search(tree,key);
     if(r.tag == no)
     {
