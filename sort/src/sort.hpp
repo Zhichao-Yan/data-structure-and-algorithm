@@ -1,7 +1,9 @@
 #ifndef S_H
 #define S_H
-#include <iostream>
+
 #include <vector>
+#include <climits>
+#include <algorithm>
 
 void SelectSort(vector<int> &v);                    // 选择排序
 void TournamentSort(vector<int> &v);                // 锦标赛排序

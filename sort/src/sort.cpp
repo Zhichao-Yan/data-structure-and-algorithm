@@ -1,5 +1,7 @@
 #include "sort.hpp"
 
+using namespace std;
+
 /* 选择排序 */
 void SelectSort(vector<int> &v)
 {
