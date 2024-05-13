@@ -17,6 +17,13 @@ typedef struct
 
 
 //这代码是真的简洁优美
+/**
+ * @description: 求解图中每一对顶点之间的最短路径
+ * @param {MGraph} G
+ * @param {Pathmatrix} *P
+ * @param {ShortPathTable} *D
+ * @return {*}
+ */
 void Floyd(MGraph G,Pathmatrix *P,ShortPathTable *D)
 {   //初始化矩阵D和P
     for(int v=0;v<G.numVertexs;v++)
